@@ -27,8 +27,8 @@ async function makedir(userId){
     if(making[userId]){return}
     making[userId] = true
     console.log('Making cache directory for '+userId)
-    fs.mkdirSync(`caches/${userId}`)
-    fs.mkdirSync(`caches/${userId}/favorites`)
+    fs.mkdirSync(`caches/${userId}`, {recursive: true})
+    fs.mkdirSync(`caches/${userId}/favorites`, {recursive: true})
 
     let fdata = await (await fetch(`https://friends.roblox.com/v1/users/${userId}/friends`)).json()
     fs.writeFileSync(`caches/${userId}/friends.json`,JSON.stringify(fdata.data))
