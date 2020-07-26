@@ -6,6 +6,8 @@ const {promisify} = require('util')
 const wait = promisify(setTimeout)
 
 let cookie = 'INSERT .ROBLOSECURITY HERE' // Can be any valid .ROBLOSECURITY cookie, but the account used may need to have the tracked users friended depending on their privacy settings.
+// Must include .ROBLOSECURITY= and the warning included with the cookie.
+
 let checkfavorites = [
     9, // places
     11, // shirts
@@ -27,8 +29,8 @@ async function makedir(userId){
     if(making[userId]){return}
     making[userId] = true
     console.log('Making cache directory for '+userId)
-    fs.mkdirSync(`caches/${userId}`)
-    fs.mkdirSync(`caches/${userId}/favorites`)
+    
+    fs.mkdirSync(`caches/${userId}/favorites`, {recursive: true})
 
     let fdata = await (await fetch(`https://friends.roblox.com/v1/users/${userId}/friends`)).json()
     fs.writeFileSync(`caches/${userId}/friends.json`,JSON.stringify(fdata.data))
@@ -65,7 +67,12 @@ function update(){
             },
             body: JSON.stringify({userIds:ids}),
         }).then(async res=>{
-            (await res.json()).userPresences.forEach(async res=>{
+            let data = await res.json()
+            if(!data.userPresences){
+                console.log(data)
+                return
+            }
+            data.userPresences.forEach(async res=>{
                 if(!fs.existsSync(`caches/${res.userId}`) || !fs.existsSync(`caches/${res.userId}/activity.json`)){
                     makedir(res.userId)
                     await wait(5000) // Give the system time to create the folder before continuing
